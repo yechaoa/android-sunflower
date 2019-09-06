@@ -16,14 +16,17 @@
 
 package com.google.samples.apps.sunflower.data
 
-import android.arch.persistence.room.Room
-import android.support.test.InstrumentationRegistry
-import android.support.test.runner.AndroidJUnit4
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.room.Room
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import com.google.samples.apps.sunflower.utilities.getValue
+import kotlinx.coroutines.runBlocking
 import org.hamcrest.Matchers.equalTo
 import org.junit.After
 import org.junit.Assert.assertThat
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -35,8 +38,11 @@ class PlantDaoTest {
     private val plantB = Plant("2", "B", "", 1, 1, "")
     private val plantC = Plant("3", "C", "", 2, 2, "")
 
-    @Before fun createDb() {
-        val context = InstrumentationRegistry.getTargetContext()
+    @get:Rule
+    var instantTaskExecutorRule = InstantTaskExecutorRule()
+
+    @Before fun createDb() = runBlocking<Unit> {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
         database = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
         plantDao = database.plantDao()
 

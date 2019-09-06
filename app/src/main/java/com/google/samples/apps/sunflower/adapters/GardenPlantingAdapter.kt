@@ -16,20 +16,22 @@
 
 package com.google.samples.apps.sunflower.adapters
 
-import android.content.Context
-import android.databinding.DataBindingUtil
-import android.support.v7.recyclerview.extensions.ListAdapter
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
+import androidx.navigation.findNavController
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import com.google.samples.apps.sunflower.R
+import com.google.samples.apps.sunflower.HomeViewPagerFragmentDirections
 import com.google.samples.apps.sunflower.data.PlantAndGardenPlantings
 import com.google.samples.apps.sunflower.databinding.ListItemGardenPlantingBinding
 import com.google.samples.apps.sunflower.viewmodels.PlantAndGardenPlantingsViewModel
 
-class GardenPlantingAdapter(
-    val context: Context
-) : ListAdapter<PlantAndGardenPlantings, GardenPlantingAdapter.ViewHolder>(GardenPlantDiffCallback()) {
+class GardenPlantingAdapter :
+    ListAdapter<PlantAndGardenPlantings, GardenPlantingAdapter.ViewHolder>(GardenPlantDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
@@ -43,7 +45,6 @@ class GardenPlantingAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         getItem(position).let { plantings ->
             with(holder) {
-                itemView.tag = plantings
                 bind(plantings)
             }
         }
@@ -52,15 +53,42 @@ class GardenPlantingAdapter(
     class ViewHolder(
         private val binding: ListItemGardenPlantingBinding
     ) : RecyclerView.ViewHolder(binding.root) {
+        init {
+            binding.setClickListener { view ->
+                binding.viewModel?.plantId?.let { plantId ->
+                    navigateToPlant(plantId, view)
+                }
+            }
+        }
+
+        private fun navigateToPlant(plantId: String, view: View) {
+            val direction = HomeViewPagerFragmentDirections
+                .actionViewPagerFragmentToPlantDetailFragment(plantId)
+            view.findNavController().navigate(direction)
+        }
 
         fun bind(plantings: PlantAndGardenPlantings) {
             with(binding) {
-                viewModel = PlantAndGardenPlantingsViewModel(
-                    itemView.context,
-                    plantings
-                )
+                viewModel = PlantAndGardenPlantingsViewModel(plantings)
                 executePendingBindings()
             }
         }
+    }
+}
+
+private class GardenPlantDiffCallback : DiffUtil.ItemCallback<PlantAndGardenPlantings>() {
+
+    override fun areItemsTheSame(
+        oldItem: PlantAndGardenPlantings,
+        newItem: PlantAndGardenPlantings
+    ): Boolean {
+        return oldItem.plant.plantId == newItem.plant.plantId
+    }
+
+    override fun areContentsTheSame(
+        oldItem: PlantAndGardenPlantings,
+        newItem: PlantAndGardenPlantings
+    ): Boolean {
+        return oldItem.plant == newItem.plant
     }
 }

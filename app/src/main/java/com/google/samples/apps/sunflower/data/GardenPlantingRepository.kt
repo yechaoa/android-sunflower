@@ -16,25 +16,23 @@
 
 package com.google.samples.apps.sunflower.data
 
-import com.google.samples.apps.sunflower.utilities.runOnIoThread
-
 class GardenPlantingRepository private constructor(
     private val gardenPlantingDao: GardenPlantingDao
 ) {
 
-    fun createGardenPlanting(plantId: String) {
-        runOnIoThread {
-            val gardenPlanting = GardenPlanting(plantId)
-            gardenPlantingDao.insertGardenPlanting(gardenPlanting)
-        }
+    suspend fun createGardenPlanting(plantId: String) {
+        val gardenPlanting = GardenPlanting(plantId)
+        gardenPlantingDao.insertGardenPlanting(gardenPlanting)
     }
 
-    fun getGardenPlantingForPlant(plantId: String) =
-            gardenPlantingDao.getGardenPlantingForPlant(plantId)
+    suspend fun removeGardenPlanting(gardenPlanting: GardenPlanting) {
+        gardenPlantingDao.deleteGardenPlanting(gardenPlanting)
+    }
 
-    fun getGardenPlantings() = gardenPlantingDao.getGardenPlantings()
+    fun isPlanted(plantId: String) =
+            gardenPlantingDao.isPlanted(plantId)
 
-    fun getPlantAndGardenPlantings() = gardenPlantingDao.getPlantAndGardenPlantings()
+    fun getPlantedGardens() = gardenPlantingDao.getPlantedGardens()
 
     companion object {
 
